@@ -1,0 +1,20 @@
+syntax = "proto2";  // 使用 proto2 语法（brpc 官方推荐）
+
+package echo;  // 包名，对应 C++ 中的 namespace echo
+
+option cc_generic_services = true;  // 生成 C++ service 基类，供业务层继承实现
+
+// 回显请求：携带一个字符串消息
+message EchoRequest {
+    required string message = 1;  // 要发送的消息内容
+}
+
+// 回显响应：原样返回收到的消息
+message EchoResponse {
+    required string message = 1;  // 回显的消息内容
+}
+
+// 回显服务定义
+service EchoService {
+    rpc Echo(EchoRequest) returns (EchoResponse);  // 接收消息并原样返回
+}

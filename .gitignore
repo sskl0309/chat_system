@@ -1,0 +1,6 @@
+# Build output
+build/
+
+# Generated protobuf source files
+*.pb.cc
+*.pb.h
