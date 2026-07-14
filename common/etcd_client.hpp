@@ -187,7 +187,7 @@ public:
      * @param etcd_address etcd 服务器地址，格式为 "http://host:port"，如 "http://localhost:2379"
      */
     ServiceDiscoverClient(const std::string &etcd_address)
-        : etcd_address_(etcd_address), watcher_(nullptr), running_(false) {}
+        : etcd_address_(etcd_address), running_(false), watcher_(nullptr) {}
     
     /**
      * @brief 析构函数

@@ -4,3 +4,6 @@ build/
 # Generated protobuf source files
 *.pb.cc
 *.pb.h
+
+# Example directory
+example/
