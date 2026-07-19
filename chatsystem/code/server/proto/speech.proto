@@ -12,19 +12,19 @@ option cc_generic_services = true;
 // 语音识别请求消息
 // 客户端发送语音数据时使用，包含语音内容及必要的身份信息
 message SpeechRecognitionReq {
-    string request_id = 1;           // 请求ID
-    bytes speech_content = 2;        // 语音数据
-    optional string user_id = 3;     // 用户ID
-    optional string session_id = 4;  // 登录会话ID -- 网关进行身份鉴权
+    required string request_id = 1;           // 请求ID
+    required bytes speech_content = 2;        // 语音数据
+    optional string user_id = 3;              // 用户ID
+    optional string session_id = 4;           // 登录会话ID -- 网关进行身份鉴权
 }
 
 // 语音识别响应消息
 // 服务端处理语音识别请求后返回的结果，包含识别状态和识别文本
 message SpeechRecognitionRsp {
-    string request_id = 1;              // 请求ID
-    bool success = 2;                   // 请求处理结果标志
-    optional string errmsg = 3;         // 失败原因
-    string recognition_result = 4;      // 识别后的文字数据
+    required string request_id = 1;              // 请求ID
+    required bool success = 2;                   // 请求处理结果标志
+    optional string errmsg = 3;                  // 失败原因
+    optional string recognition_result = 4;      // 识别后的文字数据
 }
 
 // 语音识别 RPC 服务接口定义
