@@ -62,21 +62,21 @@ DEFINE_int32(etcd_lease_ttl, 30, "Etcd lease TTL in seconds");
  * 
  * 需要在百度AI开放平台申请获取。
  */
-DEFINE_string(app_id, "", "Baidu speech API AppID");
+DEFINE_string(app_id, "123987252", "Baidu speech API AppID");
 
 /**
  * @brief 百度语音识别 API Key
  * 
  * 需要在百度AI开放平台申请获取。
  */
-DEFINE_string(api_key, "", "Baidu speech API Key");
+DEFINE_string(api_key, "ctixuJkehvlghS5PxtM4nAGn", "Baidu speech API Key");
 
 /**
  * @brief 百度语音识别 Secret Key
  * 
  * 需要在百度AI开放平台申请获取。
  */
-DEFINE_string(secret_key, "", "Baidu speech Secret Key");
+DEFINE_string(secret_key, "wvb3qfBukRCF2qM8notXHIW0RruYo71T", "Baidu speech Secret Key");
 
 /**
  * @brief 调试模式开关

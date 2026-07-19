@@ -54,3 +54,16 @@ target_link_libraries(speech_server
     curl
     crypto
 )
+
+add_executable(speech_client_test
+    test/speech_client_test.cc
+    ${PROTO_SRC}
+)
+
+target_link_libraries(speech_client_test
+    ${BRPC_DEPS}
+    etcd-cpp-api
+    spdlog::spdlog
+    fmt::fmt
+    jsoncpp_lib
+)
