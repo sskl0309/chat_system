@@ -1,0 +1,38 @@
+// 语音识别服务协议定义
+// 定义语音识别相关的请求/响应消息结构及 RPC 服务接口
+// 客户端通过此接口向服务端发送语音数据，服务端调用百度 AI 语音识别 API 进行处理
+// 返回识别后的文本结果
+
+syntax = "proto2";
+
+package speech;
+
+option cc_generic_services = true;
+
+// 语音识别请求消息
+// 客户端发送语音数据时使用，包含语音内容及必要的身份信息
+message SpeechRecognitionReq {
+    string request_id = 1;           // 请求ID
+    bytes speech_content = 2;        // 语音数据
+    optional string user_id = 3;     // 用户ID
+    optional string session_id = 4;  // 登录会话ID -- 网关进行身份鉴权
+}
+
+// 语音识别响应消息
+// 服务端处理语音识别请求后返回的结果，包含识别状态和识别文本
+message SpeechRecognitionRsp {
+    string request_id = 1;              // 请求ID
+    bool success = 2;                   // 请求处理结果标志
+    optional string errmsg = 3;         // 失败原因
+    string recognition_result = 4;      // 识别后的文字数据
+}
+
+// 语音识别 RPC 服务接口定义
+// 提供语音转文字的识别服务
+service SpeechService {
+    // 语音识别接口
+    // 将客户端发送的语音数据转换为文本
+    // 请求: SpeechRecognitionReq - 包含语音数据和身份信息
+    // 响应: SpeechRecognitionRsp - 包含识别状态和识别结果文本
+    rpc SpeechRecognition(SpeechRecognitionReq) returns (SpeechRecognitionRsp);
+}
