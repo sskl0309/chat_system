@@ -25,7 +25,6 @@
 
 // 标准库头文件
 #include <iostream>     // 输入输出流
-#include <fstream>      // 文件操作
 #include <string>       // 字符串处理
 #include <memory>       // 智能指针
 #include <random>       // 随机数生成
@@ -41,6 +40,9 @@
 
 // etcd 服务发现客户端
 #include "../common/etcd_client.hpp"
+
+// 通用工具函数
+#include "utils.hpp"
 
 // 语音识别服务的 protobuf 定义
 #include "../build/speech.pb.h"
@@ -86,35 +88,6 @@ std::vector<std::string> g_available_services;  ///< 当前可用的服务地址
 std::atomic<bool> g_service_found{false};    ///< 是否已发现可用服务
 
 // ==================== 辅助函数 ====================
-
-/**
- * @brief 读取二进制文件内容
- * 
- * 以二进制方式读取指定文件的全部内容到字符串中，
- * 适合读取语音数据等二进制文件。
- * 
- * @param file_path 文件路径
- * @return std::string 文件的二进制内容，读取失败时返回空字符串
- */
-std::string read_binary_file(const std::string& file_path) {
-    std::ifstream file(file_path, std::ios::binary | std::ios::ate);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open file: " << file_path << std::endl;
-        return "";
-    }
-    
-    std::streamsize size = file.tellg();
-    file.seekg(0, std::ios::beg);
-    
-    std::string buffer(size, '\0');
-    if (!file.read(buffer.data(), size)) {
-        std::cerr << "Failed to read file: " << file_path << std::endl;
-        return "";
-    }
-    
-    std::cout << "Read " << size << " bytes from file" << std::endl;
-    return buffer;
-}
 
 /**
  * @brief 生成随机请求ID
@@ -300,8 +273,8 @@ int main(int argc, char* argv[]) {
     }
     
     // 读取音频文件内容
-    std::string audio_data = read_binary_file(FLAGS_audio_file);
-    if (audio_data.empty()) {
+    std::string audio_data;
+    if (!utils::readFile(FLAGS_audio_file, audio_data)) {
         discover_client.stop();
         return -1;
     }

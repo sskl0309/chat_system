@@ -228,10 +228,23 @@ public:
     }
 
     /**
+     * @brief 设置默认的 Channel 配置选项
+     * 
+     * 设置在创建新 Channel 时使用的默认配置选项（协议类型、超时、重试等）。
+     * 应在 init_with_etcd() 之前调用，否则存量服务不受影响。
+     * 
+     * @param options bRPC Channel 配置选项
+     */
+    void set_default_channel_options(const ::brpc::ChannelOptions& options) {
+        default_options_ = options;
+    }
+
+    /**
      * @brief 使用 etcd 初始化服务发现
      * 
      * 创建 etcd 服务发现客户端，设置服务上下线回调，启动 Watch 监听。
      * 同时会立即查询 etcd 中已注册的所有服务并创建对应的信道。
+     * 新创建的信道将使用 set_default_channel_options() 设置的配置选项。
      * 
      * @param etcd_address etcd 服务器地址，格式为 "http://host:port"，如 "http://localhost:2379"
      * @param root_dir 服务注册的根目录，默认 "/services"
@@ -261,10 +274,10 @@ public:
             }
         );
 
-        // 立即查询 etcd 中已注册的所有服务
+        // 立即查询 etcd 中已注册的所有服务，使用默认配置创建信道
         auto services = etcd_discover_client_->discover_services();
         for (const auto& pair : services) {
-            add_service_channel(pair.first, pair.second);
+            add_service_channel(pair.first, pair.second, default_options_);
         }
 
         // 启动 etcd Watch 监听服务变化
@@ -427,7 +440,7 @@ private:
      */
     void handle_service_online(const std::string& service_name, const std::string& host_address) {
         LOG_INFO("[ServiceChannelPool] Service online: {} -> {}", service_name, host_address);
-        add_service_channel(service_name, host_address);
+        add_service_channel(service_name, host_address, default_options_);
     }
 
     /**
@@ -445,6 +458,7 @@ private:
 
     std::map<std::string, std::shared_ptr<ServiceChannelManager>> managers_;  ///< 服务名称到信道管理器的映射
     std::unique_ptr<etcd::ServiceDiscoverClient> etcd_discover_client_;       ///< etcd 服务发现客户端
+    ::brpc::ChannelOptions default_options_;                                   ///< 创建新 Channel 时的默认配置选项
     std::atomic<bool> running_;                                               ///< 运行状态标志
     mutable std::mutex mutex_;                                                ///< 互斥锁，保护 managers_ 的并发访问
 };

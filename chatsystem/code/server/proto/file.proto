@@ -1,0 +1,154 @@
+// =============================================================================
+// file.proto - 文件服务协议定义
+// =============================================================================
+// 本文件定义了文件子服务的 RPC 协议，用于在聊天系统中处理文件的上传与下载。
+//
+// 主要功能：
+//   1. 单文件上传（PutSingleFile）   - 客户端上传单个文件，服务端返回文件元信息
+//   2. 多文件上传（PutMultiFile）   - 客户端批量上传多个文件
+//   3. 单文件下载（GetSingleFile）   - 客户端根据文件ID下载单个文件
+//   4. 多文件下载（GetMultiFile）   - 客户端根据文件ID列表批量下载文件
+//
+// 设计说明：
+//   - 上传时客户端通过 FileUploadData 携带文件名、大小及二进制内容
+//   - 服务端为每个文件生成唯一 file_id，并返回 FileMessageInfo 元信息
+//   - 下载时客户端仅需提供 file_id，服务端返回 FileDownloadData（含二进制内容）
+//   - 文件实际存储由文件子服务负责，其他业务服务（如消息转发）通过 file_id 引用
+//
+// 依赖关系：
+//   - 本文件依赖 base.proto 中定义的 FileDownloadData / FileUploadData / FileMessageInfo
+// =============================================================================
+
+syntax = "proto3";
+package file;
+import "base.proto";
+
+option cc_generic_services = true;
+
+// -----------------------------------------------------------------------------
+// 单文件下载相关消息
+// -----------------------------------------------------------------------------
+
+/**
+ * @brief 单文件下载请求消息
+ * 客户端根据 file_id 向文件服务请求下载对应的文件内容。
+ */
+message GetSingleFileReq {
+    string request_id = 1;              // 请求ID，作为本次请求的全局唯一标识，用于日志追踪
+    string file_id = 2;                 // 待下载文件的唯一标识
+    optional string user_id = 3;        // 用户ID（可选），用于身份鉴权
+    optional string session_id = 4;     // 登录会话ID（可选），网关层进行身份鉴权使用
+}
+
+/**
+ * @brief 单文件下载响应消息
+ * 服务端处理下载请求后返回文件二进制内容或错误信息。
+ */
+message GetSingleFileRsp {
+    string request_id = 1;                                  // 请求ID，与请求消息中的 request_id 对应
+    bool success = 2;                                       // 处理结果标志：true 成功，false 失败
+    string errmsg = 3;                                      // 失败原因描述（success 为 false 时有效）
+    optional FileDownloadData file_data = 4;                // 文件下载数据，包含 file_id 与文件二进制内容
+}
+
+// -----------------------------------------------------------------------------
+// 多文件下载相关消息
+// -----------------------------------------------------------------------------
+
+/**
+ * @brief 多文件下载请求消息
+ * 客户端一次性提交多个 file_id 进行批量下载，减少 RPC 调用次数。
+ */
+message GetMultiFileReq {
+    string request_id = 1;              // 请求ID
+    optional string user_id = 2;        // 用户ID（可选）
+    optional string session_id = 3;     // 会话ID（可选）
+    repeated string file_id_list = 4;   // 待下载文件ID列表
+}
+
+/**
+ * @brief 多文件下载响应消息
+ * 以 map 形式返回每个文件ID对应的文件数据，便于客户端按需取用。
+ */
+message GetMultiFileRsp {
+    string request_id = 1;                                  // 请求ID
+    bool success = 2;                                       // 处理结果标志
+    string errmsg = 3;                                      // 失败原因描述
+    map<string, FileDownloadData> file_data = 4;           // 文件ID与文件数据的映射map
+}
+
+// -----------------------------------------------------------------------------
+// 单文件上传相关消息
+// -----------------------------------------------------------------------------
+
+/**
+ * @brief 单文件上传请求消息
+ * 客户端上传单个文件，携带文件名、大小及二进制内容。
+ */
+message PutSingleFileReq {
+    string request_id = 1;              // 请求ID，作为处理流程唯一标识
+    optional string user_id = 2;        // 用户ID（可选）
+    optional string session_id = 3;     // 会话ID（可选）
+    FileUploadData file_data = 4;       // 待上传文件数据（文件名、大小、二进制内容）
+}
+
+/**
+ * @brief 单文件上传响应消息
+ * 服务端存储文件后返回该文件的元信息（file_id、文件大小、文件名），
+ * 客户端可基于 file_id 后续引用此文件。
+ */
+message PutSingleFileRsp {
+    string request_id = 1;              // 请求ID
+    bool success = 2;                   // 处理结果标志
+    string errmsg = 3;                  // 失败原因描述
+    FileMessageInfo file_info = 4;      // 返回了文件组织的元信息（包含 file_id）
+}
+
+// -----------------------------------------------------------------------------
+// 多文件上传相关消息
+// -----------------------------------------------------------------------------
+
+/**
+ * @brief 多文件上传请求消息
+ * 客户端一次性上传多个文件，减少多次 RPC 往返开销。
+ */
+message PutMultiFileReq {
+    string request_id = 1;                      // 请求ID
+    optional string user_id = 2;                // 用户ID（可选）
+    optional string session_id = 3;             // 会话ID（可选）
+    repeated FileUploadData file_data = 4;       // 待上传文件数据列表
+}
+
+/**
+ * @brief 多文件上传响应消息
+ * 返回每个上传成功文件的元信息列表，顺序与请求列表对应。
+ */
+message PutMultiFileRsp {
+    string request_id = 1;                          // 请求ID
+    bool success = 2;                               // 处理结果标志
+    string errmsg = 3;                              // 失败原因描述
+    repeated FileMessageInfo file_info = 4;        // 文件元信息列表，与请求中的文件一一对应
+}
+
+// -----------------------------------------------------------------------------
+// 文件服务 RPC 接口定义
+// -----------------------------------------------------------------------------
+/**
+ * @brief 文件子服务对外提供的 RPC 接口集合
+ *
+ * 提供 4 个核心接口：单文件上传、单文件下载、多文件上传、多文件下载。
+ * 所有接口均采用同步 RPC 调用方式，由 brpc 框架负责序列化与网络传输。
+ */
+service FileService {
+    /// 单文件下载：根据 file_id 获取单个文件内容
+    rpc GetSingleFile(GetSingleFileReq) returns (GetSingleFileRsp);
+
+    /// 多文件下载：根据 file_id 列表批量获取文件内容
+    rpc GetMultiFile(GetMultiFileReq) returns (GetMultiFileRsp);
+
+    /// 单文件上传：上传单个文件并返回其元信息（含 file_id）
+    rpc PutSingleFile(PutSingleFileReq) returns (PutSingleFileRsp);
+
+    /// 多文件上传：批量上传多个文件并返回元信息列表
+    rpc PutMultiFile(PutMultiFileReq) returns (PutMultiFileRsp);
+}
