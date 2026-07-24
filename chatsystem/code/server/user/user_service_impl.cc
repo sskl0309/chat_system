@@ -325,6 +325,7 @@ void UserServiceImpl::UserLogin(google::protobuf::RpcController* cntl_base,
     // 5. 组织响应
     response->set_success(true);
     response->set_login_session_id(session_id);
+    response->set_user_id(u->user_id());
     LOG_INFO("[UserServiceImpl] User login success, user_id: {}, nickname: {}", u->user_id(), nickname);
 }
 
@@ -521,6 +522,7 @@ void UserServiceImpl::EmailLogin(google::protobuf::RpcController* cntl_base,
     // 7. 组织响应
     response->set_success(true);
     response->set_login_session_id(session_id);
+    response->set_user_id(u->user_id());
     LOG_INFO("[UserServiceImpl] Email login success, user_id: {}, email: {}", u->user_id(), email);
 }
 

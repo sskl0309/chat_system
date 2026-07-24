@@ -226,3 +226,82 @@ target_link_libraries(redis_client_test
     fmt::fmt
     pthread
 )
+
+# -------------------- user_server_test --------------------
+# 用户服务端到端测试客户端（测试全部 11 个 RPC 接口）
+# 测试顺序：注册 → 登录 → 设置头像 → 设置签名 → 设置昵称 → 获取信息 → 批量获取 → 邮箱注册/登录/设置
+add_executable(user_server_test
+    test/user/user_server_test.cc
+    ${PROTO_SRC}
+)
+target_include_directories(user_server_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(user_server_test
+    ${GFLAGS_LIB}
+    brpc
+    protobuf
+    leveldb
+    ssl
+    crypto
+    spdlog::spdlog
+    fmt::fmt
+    pthread
+)
+
+# -------------------- user_server_fix_test --------------------
+# 用户服务修复测试客户端（专门测试之前未通过的接口）
+# 测试接口：设置头像、邮箱注册、邮箱登录、设置邮箱
+add_executable(user_server_fix_test
+    test/user/user_server_fix_test.cc
+    ${PROTO_SRC}
+)
+target_include_directories(user_server_fix_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(user_server_fix_test
+    ${GFLAGS_LIB}
+    brpc
+    protobuf
+    leveldb
+    ssl
+    crypto
+    spdlog::spdlog
+    fmt::fmt
+    pthread
+)
+
+# -------------------- user_server_avatar_test --------------------
+# 用户服务头像上传测试（专门测试头像上传功能）
+add_executable(user_server_avatar_test
+    test/user/user_server_avatar_test.cc
+    ${PROTO_SRC}
+)
+target_include_directories(user_server_avatar_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(user_server_avatar_test
+    ${GFLAGS_LIB}
+    brpc
+    protobuf
+    leveldb
+    ssl
+    crypto
+    spdlog::spdlog
+    fmt::fmt
+    pthread
+)
+
+# -------------------- user_server_auto_test --------------------
+# 用户服务自动测试（自动从Redis获取验证码，无需手动输入）
+add_executable(user_server_auto_test
+    test/user/user_server_auto_test.cc
+    ${PROTO_SRC}
+)
+target_include_directories(user_server_auto_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(user_server_auto_test
+    ${GFLAGS_LIB}
+    brpc
+    protobuf
+    leveldb
+    ssl
+    crypto
+    spdlog::spdlog
+    fmt::fmt
+    redis++
+    pthread
+)
