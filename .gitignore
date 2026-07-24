@@ -11,3 +11,5 @@ example/
 build2/
 odb-build/
 mq/
+chatsystem/code/server/proto/user.proto
+

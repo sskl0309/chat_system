@@ -144,9 +144,8 @@ public:
                 properties[field.field_name] = field_value;       // 添加到properties中
             }
 
-            // 组装完整的mappings结构
-            mappings[doc_type]["properties"] = properties;
-            root["mappings"] = mappings;
+            // 组装完整的mappings结构（ES 7.x+ 不再支持 doc_type 嵌套）
+            root["mappings"]["properties"] = properties;
 
             // 将Json::Value序列化为字符串，设置缩进为空以生成紧凑的JSON
             Json::StreamWriterBuilder builder;
