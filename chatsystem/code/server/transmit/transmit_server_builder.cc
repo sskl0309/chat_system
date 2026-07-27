@@ -276,7 +276,7 @@ bool TransmitServerBuilder::init_mq_client() {
 
         // 声明消息交换机（direct 类型，持久化）
         // 消息存储服务会绑定到此交换机进行消息消费
-        mq_client_->declareExchangeAndBind("message_exchange", AMQP::direct);
+        mq_client_->declareExchange("message_exchange", AMQP::direct);
 
         LOG_INFO("[TransmitServerBuilder] MQ client initialized: {}:{}", config_.mq_host, config_.mq_port);
         return true;

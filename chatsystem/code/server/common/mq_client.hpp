@@ -154,6 +154,29 @@ public:
     }
 
     /**
+     * @brief 声明交换机
+     * 
+     * 只声明交换机，不创建队列或绑定。适用于只发布消息的场景。
+     * @param exchangeName 交换机名称
+     * @param type 交换机类型，默认 direct（直连型）
+     *             可选值：AMQP::direct, AMQP::fanout, AMQP::topic, AMQP::headers
+     * @return 操作成功返回 true，失败返回 false
+     */
+    bool declareExchange(const std::string& exchangeName, 
+                         AMQP::ExchangeType type = AMQP::direct) {
+        std::lock_guard<std::mutex> lock(_mutex);
+        
+        // 检查信道是否可用
+        if (!_channel || !_channel->usable()) {
+            return false;
+        }
+
+        // 声明交换机（持久化）
+        _channel->declareExchange(exchangeName, type, AMQP::durable);
+        return true;
+    }
+
+    /**
      * @brief 声明交换机、队列并进行绑定
      * 
      * 按顺序执行：声明交换机 -> 声明队列 -> 将队列绑定到交换机
@@ -178,23 +201,17 @@ public:
         // 声明交换机（持久化）
         _channel->declareExchange(exchangeName, type, AMQP::durable);
 
-        // 声明队列
-        std::string actualQueueName = queueName;
-        if (actualQueueName.empty()) {
-            // 队列名为空时，由服务器自动生成队列名
-            _channel->declareQueue(AMQP::durable).onSuccess([&actualQueueName](const std::string& name, 
-                                                                               uint32_t messageCount, 
-                                                                               uint32_t consumerCount) {
-                actualQueueName = name;
-            });
-        } else {
-            // 使用指定的队列名
-            _channel->declareQueue(actualQueueName, AMQP::durable);
+        // 如果没有指定队列名，只声明交换机即可
+        if (queueName.empty()) {
+            return true;
         }
 
-        // 将队列绑定到交换机（如果提供了路由键和队列名）
-        if (!routingKey.empty() && !actualQueueName.empty()) {
-            _channel->bindQueue(exchangeName, actualQueueName, routingKey);
+        // 声明队列
+        _channel->declareQueue(queueName, AMQP::durable);
+
+        // 将队列绑定到交换机（如果提供了路由键）
+        if (!routingKey.empty()) {
+            _channel->bindQueue(exchangeName, queueName, routingKey);
         }
 
         return true;

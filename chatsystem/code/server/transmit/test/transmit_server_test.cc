@@ -95,8 +95,10 @@ bool test_get_transmit_target(transmit::MsgTransmitService_Stub& stub) {
     brpc::Controller cntl;
 
     req.set_request_id(generate_request_id());
-    req.set_user_id("test_user_" + random_string(8));
-    req.set_chat_session_id("test_session_" + random_string(8));
+    // 使用数据库中已存在的用户ID（发送者）
+    req.set_user_id("USER19f94f6a7d7_1890436_82f6ce167b074406_000103");
+    // 使用预创建的测试会话（包含多个成员）
+    req.set_chat_session_id("TEST_SESSION_001");
     
     // 设置文本消息内容
     file::MessageContent* msg_content = new file::MessageContent();
