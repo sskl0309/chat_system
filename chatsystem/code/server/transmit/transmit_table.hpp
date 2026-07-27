@@ -24,8 +24,8 @@
 #include <odb/transaction.hxx>
 #include <odb/session.hxx>
 
-#include "../odb/chat_session-odb.hxx"
-#include "../odb/chat_session_member-odb.hxx"
+#include "chat_session-odb.hxx"
+#include "chat_session_member-odb.hxx"
 #include "../common/log.hpp"
 
 namespace transmit_table {

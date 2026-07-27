@@ -44,8 +44,8 @@ protobuf_generate_cpp(PROTO_SRC PROTO_HDR ${PROTO_FILES})
 # ==================== ODB 源文件 ====================
 # 消息转发服务使用会话表和会话成员表（与好友服务共享）
 set(ODB_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/../odb/chat_session-odb.cxx
-    ${CMAKE_CURRENT_SOURCE_DIR}/../odb/chat_session_member-odb.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/../odb/friend/chat_session-odb.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/../odb/friend/chat_session_member-odb.cxx
 )
 
 # ==================== 头文件包含路径 ====================
@@ -62,7 +62,7 @@ include_directories(${BRPC_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../common)
 
 # ODB 头文件路径（chat_session.hxx, chat_session_member.hxx, xxx-odb.hxx）
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../odb)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../odb/friend)
 
 # ==================== brpc 静态依赖库列表 ====================
 set(BRPC_DEPS
@@ -119,4 +119,37 @@ target_link_libraries(transmit_server
 # ==================== 输出目录设置 ====================
 set_target_properties(transmit_server PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+# =============================================================================
+# 测试目标（端到端测试客户端）
+# =============================================================================
+# 测试依赖说明：
+#   - brpc:      RPC 框架（客户端）
+#   - protobuf:  消息序列化
+#   - gflags:    命令行参数解析
+#   - spdlog:    日志输出
+# =============================================================================
+
+# gflags 静态库路径
+set(GFLAGS_LIB /usr/lib/x86_64-linux-gnu/libgflags.a)
+
+# -------------------- transmit_server_test --------------------
+# 消息转发服务端到端测试客户端（测试 GetTransmitTarget RPC 接口）
+# 测试用例：正常请求、空用户ID、空会话ID、空消息内容
+add_executable(transmit_server_test
+    test/transmit_server_test.cc
+    ${PROTO_SRC}
+)
+target_include_directories(transmit_server_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(transmit_server_test
+    ${GFLAGS_LIB}
+    brpc
+    protobuf
+    leveldb
+    ssl
+    crypto
+    spdlog::spdlog
+    fmt::fmt
+    pthread
 )

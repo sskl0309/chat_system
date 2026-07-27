@@ -50,7 +50,7 @@ protobuf_generate_cpp(PROTO_SRC PROTO_HDR ${PROTO_FILES})
 
 # ==================== ODB 源文件 ====================
 set(ODB_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/../odb/user-odb.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/../odb/user/user-odb.cxx
 )
 
 # ==================== 头文件包含路径 ====================
@@ -67,7 +67,7 @@ include_directories(${BRPC_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../common)
 
 # ODB 头文件路径（user.hxx, user-odb.hxx）
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../odb)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../odb/user)
 
 # redis++ 头文件路径
 include_directories(${REDIS_PLUS_PLUS_INCLUDE_DIR})

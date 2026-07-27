@@ -4,29 +4,52 @@ import "base.proto";
 
 option cc_generic_services = true;
 
-//这个用于和网关进行通信
+// =============================================================================
+// 消息转发服务接口定义
+// 该文件定义了消息转发服务的 RPC 接口，用于处理消息的路由和转发逻辑
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// NewMessageReq - 新消息请求
+// 用于网关向消息转发服务发送消息请求
+// -----------------------------------------------------------------------------
 message NewMessageReq {
-    string request_id = 1;  //请求ID -- 全链路唯一标识
-    optional string user_id = 2;
-    optional string session_id = 3;//客户端身份识别信息 -- 这就是消息发送者
-    string chat_session_id = 4;  //聊天会话ID -- 标识了当前消息属于哪个会话，应该转发给谁
-    file.MessageContent message = 5; // 消息内容--消息类型+内容
+    string request_id = 1;          // 请求ID，全链路唯一标识，用于日志追踪和问题排查
+    optional string user_id = 2;    // 消息发送者的用户ID
+    optional string session_id = 3; // 客户端会话ID，标识当前客户端连接会话
+    string chat_session_id = 4;     // 聊天会话ID，标识消息所属的会话（单聊或群聊）
+    file.MessageContent message = 5; // 消息内容，包含消息类型和具体内容
 }
+
+// -----------------------------------------------------------------------------
+// NewMessageRsp - 新消息响应
+// 网关调用消息转发服务后的响应结构（预留接口，暂未使用）
+// -----------------------------------------------------------------------------
 message NewMessageRsp {
-    string request_id = 1;
-    bool success = 2;
-    string errmsg = 3; 
+    string request_id = 1; // 请求ID，与请求中的request_id对应
+    bool success = 2;      // 请求处理是否成功
+    string errmsg = 3;     // 错误信息，失败时返回具体原因
 }
 
-//这个用于内部的通信,生成完整的消息信息，并获取消息的转发人员列表
+// -----------------------------------------------------------------------------
+// GetTransmitTargetRsp - 获取消息转发目标响应
+// 内部服务调用，用于获取消息的完整结构和转发目标列表
+// -----------------------------------------------------------------------------
 message GetTransmitTargetRsp {
-    string request_id = 1;
-    bool success = 2;
-    string errmsg = 3; 
-    file.MessageInfo message = 4; // 组织好的消息结构 -- 
-    repeated string target_id_list = 5; //消息的转发目标列表
+    string request_id = 1;           // 请求ID，与请求中的request_id对应
+    bool success = 2;                // 请求处理是否成功
+    string errmsg = 3;               // 错误信息，失败时返回具体原因
+    file.MessageInfo message = 4;    // 组织好的完整消息结构，包含发送者信息和消息内容
+    repeated string target_id_list = 5; // 消息转发目标用户ID列表，消息将发送给这些用户
 }
 
+// -----------------------------------------------------------------------------
+// MsgTransmitService - 消息转发服务
+// 提供消息转发相关的 RPC 接口
+// -----------------------------------------------------------------------------
 service MsgTransmitService {
+    // GetTransmitTarget - 获取消息转发目标
+    // 根据请求中的会话ID获取会话成员列表，并组装完整的消息结构
+    // 返回消息转发目标用户列表，用于后续消息推送
     rpc GetTransmitTarget(NewMessageReq) returns (GetTransmitTargetRsp);
 }
