@@ -134,7 +134,8 @@ bool MsgTransmitServiceImpl::get_user_info_from_user_service(const std::string& 
  * 
  * 设计考量：
  *   - 消息存储子服务会消费此消息并进行持久化
- *   - 使用 direct 交换机，路由键为会话ID，便于消息存储服务按会话消费
+ *   - 使用 fanout 交换机（广播模式），消息会被所有绑定的队列接收
+ *   - 路由键保留为会话ID，便于日志追踪（fanout 模式下实际会被忽略）
  */
 bool MsgTransmitServiceImpl::publish_message_to_mq(const file::MessageInfo& message_info) {
     // 1. 校验 MQ 客户端是否就绪
@@ -151,7 +152,7 @@ bool MsgTransmitServiceImpl::publish_message_to_mq(const file::MessageInfo& mess
     }
 
     // 3. 发布到 MQ 消息队列
-    // 使用会话ID作为路由键，消息存储服务按会话消费
+    // fanout 模式下路由键会被忽略，所有绑定的队列都会收到消息
     std::string exchange_name = "message_exchange";
     std::string routing_key = message_info.chat_session_id();
 

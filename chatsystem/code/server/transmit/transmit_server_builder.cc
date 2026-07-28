@@ -274,9 +274,10 @@ bool TransmitServerBuilder::init_mq_client() {
             return false;
         }
 
-        // 声明消息交换机（direct 类型，持久化）
+        // 声明消息交换机（fanout 类型，广播模式）
         // 消息存储服务会绑定到此交换机进行消息消费
-        mq_client_->declareExchange("message_exchange", AMQP::direct);
+        // fanout 模式会将消息广播到所有绑定的队列，忽略路由键
+        mq_client_->declareExchange("message_exchange", AMQP::fanout);
 
         LOG_INFO("[TransmitServerBuilder] MQ client initialized: {}:{}", config_.mq_host, config_.mq_port);
         return true;
