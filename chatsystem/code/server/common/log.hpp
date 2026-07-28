@@ -93,6 +93,7 @@ inline void init(bool is_debug, const std::string& log_file = "app.log", LogLeve
     }
     
     detail::get_logger()->set_level(spd_level);
+    detail::get_logger()->flush_on(spdlog::level::info);
 }
 
 /**

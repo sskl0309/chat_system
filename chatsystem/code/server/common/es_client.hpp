@@ -159,9 +159,14 @@ public:
                 body
             );
 
-            // 检查HTTP响应状态码，200和201都表示成功
+            // 检查HTTP响应状态码
             if (response.status_code == 200 || response.status_code == 201) {
                 LOG_INFO("[ESClient] Index created successfully: {}", index_name);
+                return true;
+            } else if (response.status_code == 400 && 
+                       response.text.find("resource_already_exists_exception") != std::string::npos) {
+                // 索引已存在，视为成功（幂等操作）
+                LOG_INFO("[ESClient] Index already exists: {}, continuing", index_name);
                 return true;
             } else {
                 LOG_ERROR("[ESClient] Failed to create index: {}, status: {}, error: {}",
@@ -267,12 +272,20 @@ public:
             builder["indentation"] = "";
             std::string body = Json::writeString(builder, query);
 
+            // DEBUG: 打印请求体
+            LOG_INFO("[ESClient] Search request: index={}, doc_type={}, body={}",
+                     index_name, doc_type, body);
+
             // 调用elasticlient的search方法执行查询
             cpr::Response response = client_->search(
                 index_name,
                 doc_type,
                 body
             );
+
+            // DEBUG: 打印响应
+            LOG_INFO("[ESClient] Search response: status={}, body={}",
+                     response.status_code, response.text.substr(0, 500));
 
             // 检查HTTP响应状态码
             if (response.status_code == 200) {

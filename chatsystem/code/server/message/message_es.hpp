@@ -102,9 +102,9 @@ public:
      */
     bool create_index() {
         std::vector<es::ESClient::FieldProperty> fields = {
-            // keyword 类型：精确匹配，不进行分词
-            {"chat_session_id", "keyword", "standard", true},
-            {"message_id", "keyword", "standard", true},
+            // keyword 类型：精确匹配，不进行分词，不可设置 analyzer
+            {"chat_session_id", "keyword", "", true},
+            {"message_id", "keyword", "", true},
             // text 类型：ik_max_word 分词器（中文分词）
             {"content", "text", "ik_max_word", true},
         };
@@ -172,7 +172,7 @@ public:
         // 构造查询语句
         Json::Value query;
         // bool must 查询：所有条件都必须满足
-        query["query"]["bool"]["must"][0]["term"]["chat_session_id.keyword"] = session_id;
+        query["query"]["bool"]["must"][0]["term"]["chat_session_id"] = session_id;
         query["query"]["bool"]["must"][1]["match"]["content"] = keyword;
 
         Json::Value search_result;

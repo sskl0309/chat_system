@@ -1,0 +1,36 @@
+# Temporary build file for es_direct_test
+cmake_minimum_required(VERSION 3.10)
+project(es_direct_test)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Include directories
+include_directories(
+    /home/sskl/chat_system/chatsystem/code/server
+    /home/sskl/chat_system/chatsystem/code/server/common
+    /home/sskl/chat_system/chatsystem/code/server/third_party/elasticlient/include
+    /home/sskl/chat_system/chatsystem/code/include
+    /usr/include/jsoncpp
+    /usr/include/spdlog
+    /usr/include/fmt
+)
+
+# Find packages
+find_package(PkgConfig REQUIRED)
+
+# Build the test
+add_executable(es_direct_test es_direct_test.cc)
+
+target_link_libraries(es_direct_test
+    elasticlient
+    jsoncpp
+    spdlog
+    fmt
+    curl
+    pthread
+    dl
+)
+
+set_target_properties(es_direct_test PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+)
