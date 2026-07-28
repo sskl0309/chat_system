@@ -209,8 +209,8 @@ public:
         // 声明队列
         _channel->declareQueue(queueName, AMQP::durable);
 
-        // 将队列绑定到交换机（如果提供了路由键）
-        if (!routingKey.empty()) {
+        // 将队列绑定到交换机（fanout 交换机不需要路由键，直接绑定）
+        if (type == AMQP::fanout || !routingKey.empty()) {
             _channel->bindQueue(exchangeName, queueName, routingKey);
         }
 
