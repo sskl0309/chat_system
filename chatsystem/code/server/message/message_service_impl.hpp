@@ -233,11 +233,13 @@ private:
      *
      * 对于图片、文件、语音类型的消息，将文件二进制数据
      * 通过 RPC 上传到文件管理子服务进行持久化存储。
+     * 如果消息已携带 file_id，则直接返回该 file_id。
      *
      * @param msg_info 包含文件数据的消息对象
+     * @param out_file_id 输出参数：文件子服务返回的 file_id
      * @return true 存储成功
      */
-    bool store_file_message(const file::MessageInfo& msg_info);
+    bool store_file_message(const file::MessageInfo& msg_info, std::string& out_file_id);
 
     /**
      * @brief 数据库消息类型转 protobuf 消息类型

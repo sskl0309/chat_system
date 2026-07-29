@@ -279,7 +279,9 @@ file::MessageInfo MsgStorageServiceImpl::construct_message_info(std::shared_ptr<
  * @param msg_info 包含待上传文件数据的消息对象
  * @return true 存储成功或无需存储
  */
-bool MsgStorageServiceImpl::store_file_message(const file::MessageInfo& msg_info) {
+bool MsgStorageServiceImpl::store_file_message(const file::MessageInfo& msg_info, std::string& out_file_id) {
+    out_file_id.clear();
+
     if (!channel_pool_) {
         LOG_ERROR("[MsgStorageServiceImpl] Channel pool not initialized");
         return false;
@@ -316,6 +318,7 @@ bool MsgStorageServiceImpl::store_file_message(const file::MessageInfo& msg_info
 
     // 如果已有 file_id，说明文件已存在于文件子服务中，无需重复上传
     if (!file_id.empty()) {
+        out_file_id = file_id;
         return true;
     }
 
@@ -367,7 +370,8 @@ bool MsgStorageServiceImpl::store_file_message(const file::MessageInfo& msg_info
 
     // 记录上传成功的文件ID
     if (rsp.has_file_info()) {
-        LOG_INFO("[MsgStorageServiceImpl] File stored, file_id: {}", rsp.file_info().file_id());
+        out_file_id = rsp.file_info().file_id();
+        LOG_INFO("[MsgStorageServiceImpl] File stored, file_id: {}", out_file_id);
     }
 
     return true;
@@ -468,15 +472,7 @@ void MsgStorageServiceImpl::on_message_consume(const std::string& message_str, u
             }
         }
 
-        // 5. 写入 MySQL 数据库
-        if (!message_table_->insert(db_msg)) {
-            LOG_ERROR("[MsgStorageServiceImpl] Failed to insert message to DB, message_id: {}",
-                      msg_info.message_id());
-            mq_client_->reject(deliveryTag, true);  // 插入失败，可重试
-            return;
-        }
-
-        // 6. 非文本消息：检查并转储文件数据到文件子服务
+        // 5. 非文本消息：检查是否携带文件数据但无 file_id，需先上传到文件子服务
         if (msg_type != 0) {
             bool has_file_data = false;
 
@@ -495,10 +491,28 @@ void MsgStorageServiceImpl::on_message_consume(const std::string& message_str, u
                 has_file_data = true;
             }
 
-            // 如果有文件数据，上传到文件子服务持久化
+            // 如果有文件数据，上传到文件子服务持久化，获取 file_id
             if (has_file_data) {
-                store_file_message(msg_info);
+                std::string new_file_id;
+                if (!store_file_message(msg_info, new_file_id)) {
+                    LOG_ERROR("[MsgStorageServiceImpl] Failed to upload file, message_id: {}",
+                              msg_info.message_id());
+                    mq_client_->reject(deliveryTag, true);  // 上传失败，可重试
+                    return;
+                }
+                // 用文件子服务返回的 file_id 更新数据库记录
+                if (!new_file_id.empty()) {
+                    db_msg.file_id(new_file_id);
+                }
             }
+        }
+
+        // 6. 写入 MySQL 数据库
+        if (!message_table_->insert(db_msg)) {
+            LOG_ERROR("[MsgStorageServiceImpl] Failed to insert message to DB, message_id: {}",
+                      msg_info.message_id());
+            mq_client_->reject(deliveryTag, true);  // 插入失败，可重试
+            return;
         }
 
         // 7. 确认消费成功
