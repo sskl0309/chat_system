@@ -1,5 +1,5 @@
 syntax = "proto3";
-package friend;
+package friendsvc;
 import "base.proto";
 
 option cc_generic_services = true;
@@ -15,7 +15,7 @@ message GetFriendListRsp {
     string request_id = 1;
     bool success = 2;
     string errmsg = 3; 
-    repeated UserInfo friend_list = 4; //要返回的用户信息
+    repeated file.UserInfo friend_list = 4; //要返回的用户信息
 }
 
 //--------------------------------------
@@ -73,7 +73,7 @@ message GetPendingFriendEventListReq {
 
 message FriendEvent {
     optional string event_id = 1;
-    UserInfo sender = 3;
+    file.UserInfo sender = 3;
 }
 message GetPendingFriendEventListRsp {
     string request_id = 1;
@@ -94,7 +94,7 @@ message FriendSearchRsp {
     string request_id = 1;
     bool success = 2;
     string errmsg = 3; 
-    repeated UserInfo user_info = 4;
+    repeated file.UserInfo user_info = 4;
 }
 
 //--------------------------------------
@@ -108,7 +108,7 @@ message GetChatSessionListRsp {
     string request_id = 1;
     bool success = 2;
     string errmsg = 3; 
-    repeated ChatSessionInfo chat_session_info_list = 4;
+    repeated file.ChatSessionInfo chat_session_info_list = 4;
 }
 //--------------------------------------
 //创建会话
@@ -125,7 +125,7 @@ message ChatSessionCreateRsp {
     bool success = 2;
     string errmsg = 3; 
     //这个字段属于后台之间的数据，给前端回复的时候不需要这个字段，会话信息通过通知进行发送
-    optional ChatSessionInfo chat_session_info = 4; 
+    optional file.ChatSessionInfo chat_session_info = 4; 
 }
 //--------------------------------------
 //获取会话成员列表
@@ -139,7 +139,7 @@ message GetChatSessionMemberRsp {
     string request_id = 1;
     bool success = 2;
     string errmsg = 3; 
-    repeated UserInfo member_info_list = 4;
+    repeated file.UserInfo member_info_list = 4;
 }
 
 service FriendService {

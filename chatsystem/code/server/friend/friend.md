@@ -238,7 +238,7 @@ POST /user/_doc
                 "type" : "keyword",
                 "analyzer" : "standard"
             },
-            "phone" : {
+            "email" : {
                 "type" : "keyword",
                 "analyzer" : "standard"
             },
@@ -259,9 +259,9 @@ POST /user/_doc
 ```json
 POST /user/_doc/_bulk
 {"index":{"_id":"1"}}
-{"user_id" : "USER4b862aaa-2df8654a-7eb4bb65-e3507f66","nickname" : "昵称1","phone" : "手机号1","description" : "签名1","avatar_id" : "头像1"}
+{"user_id" : "USER4b862aaa-2df8654a-7eb4bb65-e3507f66","nickname" : "昵称1","email" : "邮箱1","description" : "签名1","avatar_id" : "头像1"}
 {"index":{"_id":"2"}}
-{"user_id" : "USER14eeeaa5-442771b9-0262e455-e4663d1d","nickname" : "昵称2","phone" : "手机号2","description" : "签名2","avatar_id" : "头像2"}
+{"user_id" : "USER14eeeaa5-442771b9-0262e455-e4663d1d","nickname" : "昵称2","email" : "邮箱2","description" : "签名2","avatar_id" : "头像2"}
 // ... (更多测试数据)
 ```
 
@@ -302,7 +302,7 @@ GET /user/_doc/_search?pretty
                 },
                 {
                     "match" : {
-                        "phone" : "昵称"
+                        "email" : "昵称"
                     }
                 }
             ]
@@ -355,7 +355,7 @@ DELETE /user
 #### 搜索好友
 1. 取出请求中的用户 ID，和搜索关键字。
 2. 从好友关系表中取出该用户所有好友 ID。
-3. 根据关键字从 ES 服务器中进行用户搜索，搜索的时候需要将关键字作为用户 ID/手机号/昵称的搜索关键字进行搜索，且需要根据自己的 ID 和好友 ID 过滤掉自己和自己的好友。
+3. 根据关键字从 ES 服务器中进行用户搜索，搜索的时候需要将关键字作为用户 ID/邮箱/昵称的搜索关键字进行搜索，且需要根据自己的 ID 和好友 ID 过滤掉自己和自己的好友。
 4. 根据搜索到的用户简息中的头像 ID，从文件服务器批量获取用户头像数据。
 5. 组织响应，将搜索到的用户列表响应给网关。
 
